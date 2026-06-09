@@ -867,3 +867,200 @@
     letter-spacing: 3px;
     padding: 0.2rem 0;
 }
+
+/* ══════════════════════════════════════
+   SCORE TABS
+══════════════════════════════════════ */
+.score-tabs {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+    width: 100%;
+}
+
+.score-tab {
+    font-family: var(--font-pixel);
+    font-size: clamp(0.32rem, 1.1vw, 0.48rem);
+    letter-spacing: 1px;
+    padding: 0.3rem 0.6rem;
+    background: transparent;
+    color: rgba(255,255,255,0.35);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-bottom: none;
+    cursor: pointer;
+    transition: color var(--t-fast), border-color var(--t-fast);
+    border-radius: 3px 3px 0 0;
+}
+
+.score-tab:hover {
+    color: var(--cyan);
+    border-color: rgba(0,255,255,0.4);
+}
+
+.score-tab--active {
+    color: var(--cyan);
+    border-color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+    background: rgba(0,255,255,0.06);
+}
+
+/* ══════════════════════════════════════
+   ACHIEVEMENT STRIP
+══════════════════════════════════════ */
+.ach-strip {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.ach-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    justify-content: center;
+    max-height: 4.5rem;
+    overflow: hidden;
+}
+
+.ach-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.25rem 0.3rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 2px;
+    opacity: 0.2;
+    transition: opacity var(--t-fast), border-color var(--t-fast);
+    cursor: default;
+    min-width: 2.4rem;
+}
+
+.ach-badge--done {
+    opacity: 1;
+    border-color: var(--yellow);
+    box-shadow: 0 0 8px rgba(255,255,0,0.2);
+    animation: scorePop 0.35s ease;
+}
+
+.ach-badge-icon {
+    font-family: var(--font-terminal);
+    font-size: 1rem;
+    color: var(--yellow);
+    line-height: 1;
+}
+
+.ach-badge-label {
+    font-family: var(--font-pixel);
+    font-size: 0.28rem;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 3.2rem;
+}
+
+.ach-count-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.ach-count {
+    font-family: var(--font-terminal);
+    font-size: 1rem;
+    color: var(--yellow);
+}
+
+.ach-label {
+    font-family: var(--font-pixel);
+    font-size: 0.38rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+}
+
+/* ══════════════════════════════════════
+   ACHIEVEMENT TOAST
+══════════════════════════════════════ */
+.achievement-toast {
+    position: fixed;
+    top: 1.2rem;
+    right: 1.2rem;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1.1rem;
+    background: rgba(0,0,0,0.92);
+    border: 1px solid var(--yellow);
+    box-shadow: 0 0 20px rgba(255,255,0,0.25), inset 0 0 20px rgba(255,255,0,0.04);
+    border-radius: 3px;
+    max-width: min(320px, 90vw);
+    pointer-events: none;
+}
+
+.achievement-toast.toast-in  { animation: toastIn  0.32s ease forwards; }
+.achievement-toast.toast-out { animation: toastOut 0.4s ease forwards; }
+
+.ach-toast-icon-wrap {
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 2px solid var(--yellow);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(255,255,0,0.08);
+}
+
+.ach-icon {
+    font-family: var(--font-terminal);
+    font-size: 1.4rem;
+    color: var(--yellow);
+    text-shadow: 0 0 8px var(--yellow);
+}
+
+.ach-toast-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.ach-toast-label {
+    font-family: var(--font-pixel);
+    font-size: 0.38rem;
+    color: var(--yellow);
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+.ach-title {
+    font-family: var(--font-pixel);
+    font-size: clamp(0.45rem, 1.4vw, 0.6rem);
+    color: #fff;
+    text-shadow: 0 0 6px rgba(255,255,0,0.5);
+}
+
+.ach-desc {
+    font-family: var(--font-terminal);
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    color: rgba(255,255,255,0.55);
+    line-height: 1.2;
+}
+
+/* ── Game select card: Invaders color ── */
+.game-card[data-game="invaders"] .game-card__title { color: #ff4466; text-shadow: 0 0 8px #ff4466; }
+.game-card[data-game="invaders"].game-card--active  { border-color: #ff4466; box-shadow: 0 0 24px rgba(255,68,102,0.25); }
+
+/* ── invaders hints ── */
+#gameScreen[data-game="invaders"] .game-hints { content: 'ARROWS/WASD  SPACE=SHOOT'; }
+
+@media (max-width: 600px) {
+    .achievement-toast { top: auto; bottom: 4.5rem; right: 0.5rem; left: 0.5rem; max-width: 100%; }
+    .ach-gallery { max-height: 3rem; }
+    .score-tab { padding: 0.2rem 0.4rem; }
+}

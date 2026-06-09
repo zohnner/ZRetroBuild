@@ -46,7 +46,8 @@ class GameController {
     constructor() {
         this.credits         = 0;
         this.players         = 1;
-        this.activeGame      = null;  // 'snake' | 'breakout'
+        this.activeGame      = null;
+        this._activeTab      = 'snake';
         this.gameInstance    = null;
         this._pendingScore   = 0;
         this._pendingIsHigh  = false;
@@ -82,8 +83,9 @@ class GameController {
         var self = this;
         this._gameSelect = new GameSelect(
             [
-                { id: 'snake',   title: 'SNAKE',    tag: 'CLASSIC', color: '#00ffff' },
-                { id: 'breakout',title: 'BREAKOUT', tag: 'NEW',     color: '#ff00ff' },
+                { id: 'snake',    title: 'SNAKE',    tag: 'CLASSIC', color: '#00ffff' },
+                { id: 'breakout', title: 'BREAKOUT', tag: 'NEW',     color: '#ff00ff' },
+                { id: 'invaders', title: 'INVADERS', tag: 'HOT',     color: '#ff4466' },
             ],
             function(gameId) { self._launchGameById(gameId); }
         );
@@ -92,9 +94,33 @@ class GameController {
     _initUI() {
         this._updateCreditDisplay(false);
         this._updateMuteIcon();
-        this._updateTopScore('snake');
         this._renderScoreBoard('snake');
         document.getElementById('playerDisplay').textContent = this.players;
+        if (window.achievements) {
+            window.achievements.renderGallery(document.getElementById('achGallery'));
+            this._updateAchCount();
+        }
+        this._bindScoreTabs();
+    }
+
+    _bindScoreTabs() {
+        var self = this;
+        var tabs = document.querySelectorAll('.score-tab');
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                var game = tab.getAttribute('data-game');
+                self._activeTab = game;
+                self._renderScoreBoard(game);
+                if (window.audio) { window.audio.init(); window.audio.select(); }
+            });
+        });
+    }
+
+    _updateAchCount() {
+        var el = document.getElementById('achCount');
+        if (el && window.achievements) {
+            el.textContent = window.achievements.unlockedCount() + ' / 15';
+        }
     }
 
     _bindEvents() {
@@ -148,6 +174,7 @@ class GameController {
         this._saveState();
         window.audio.coin();
         this._animateCoinDrop();
+        if (window.achievements) window.achievements.check('coin');
     }
 
     addCredits(n) {
@@ -178,7 +205,6 @@ class GameController {
         this._updateMuteIcon(); this._saveState();
     }
 
-    // ─── Select screen ───────────────────────────────────────
     _showGameSelect() {
         var splash = document.getElementById('splashScreen');
         var select = document.getElementById('selectScreen');
@@ -193,27 +219,29 @@ class GameController {
 
     _cancelSelect() {
         this._gameSelect.hide();
-        // Refund credit
         this.credits = Math.min(99, this.credits + 1);
         this._updateCreditDisplay(false);
         this._saveState();
         var splash = document.getElementById('splashScreen');
         splash.style.display = '';
-        this._renderScoreBoard(this.activeGame || 'snake');
+        this._renderScoreBoard(this._activeTab || 'snake');
     }
 
-    // ─── Launch game ─────────────────────────────────────────
     _launchGameById(gameId) {
         this.activeGame = gameId;
+        if (window.achievements) window.achievements.check('game_start', { game: gameId });
         var select = document.getElementById('selectScreen');
         select.classList.add('hidden');
-
         var gscr = document.getElementById('gameScreen');
         gscr.classList.remove('hidden');
+        gscr.setAttribute('data-game', gameId);
 
-        // Update game screen title
         var nameEl = document.getElementById('gameName');
         if (nameEl) nameEl.textContent = '8-BIT ' + gameId.toUpperCase();
+
+        var hints = { snake:'ARROWS / WASD / SWIPE', breakout:'MOUSE / ARROWS  Z=LASER', invaders:'ARROWS / WASD  SPACE=SHOOT' };
+        var hintsEl = document.getElementById('gameHints');
+        if (hintsEl) hintsEl.textContent = hints[gameId] || 'ARROWS / WASD';
 
         this._startGame(gameId);
     }
@@ -225,6 +253,12 @@ class GameController {
 
         if (gameId === 'breakout') {
             this.gameInstance = new BreakoutGame(canvas);
+            this.gameInstance.onScore = function(s) { self._onScore(s); };
+            this.gameInstance.onDeath = function(s) { self._onDeath(s); };
+            this.gameInstance.onLife  = function(l) { self._onLife(l); };
+            this._initLivesDisplay(3);
+        } else if (gameId === 'invaders') {
+            this.gameInstance = new InvadersGame(canvas);
             this.gameInstance.onScore = function(s) { self._onScore(s); };
             this.gameInstance.onDeath = function(s) { self._onDeath(s); };
             this.gameInstance.onLife  = function(l) { self._onLife(l); };
@@ -251,8 +285,13 @@ class GameController {
         splash.style.display = '';
         document.getElementById('gameOverlay').classList.add('hidden');
         this._hideLivesDisplay();
-        this._renderScoreBoard(this.activeGame || 'snake');
-        this._updateTopScore(this.activeGame || 'snake');
+        var tab = this.activeGame || this._activeTab || 'snake';
+        this._renderScoreBoard(tab);
+        this._updateTopScore(tab);
+        if (window.achievements) {
+            window.achievements.renderGallery(document.getElementById('achGallery'));
+            this._updateAchCount();
+        }
     }
 
     _restartGame() {
@@ -260,10 +299,19 @@ class GameController {
         this._startGame(this.activeGame || 'snake');
     }
 
-    _onScore(score) { this._setHUD(score); }
-    _onLife(lives)  {
+    _onScore(score) {
+        this._setHUD(score);
+        if (window.achievements) window.achievements.check('score', { score: score });
+    }
+
+    _onLife(lives) {
         var el = document.getElementById('livesDisplay');
-        if (el) el.textContent = 'LIVES: ' + String(lives).repeat ? Array(lives+1).join('O') : lives;
+        if (el) {
+            var icons = '';
+            for (var i = 0; i < lives; i++) icons += 'O ';
+            el.textContent = 'LIVES  ' + icons.trim();
+            el.classList.remove('hidden');
+        }
     }
 
     _onDeath(score) {
@@ -315,8 +363,14 @@ class GameController {
 
     _initLivesDisplay(lives) {
         var el = document.getElementById('livesDisplay');
-        if (el) { el.textContent = Array(lives+1).join('O'); el.classList.remove('hidden'); }
+        if (el) {
+            var icons = '';
+            for (var i = 0; i < lives; i++) icons += 'O ';
+            el.textContent = 'LIVES  ' + icons.trim();
+            el.classList.remove('hidden');
+        }
     }
+
     _hideLivesDisplay() {
         var el = document.getElementById('livesDisplay');
         if (el) el.classList.add('hidden');
@@ -344,6 +398,15 @@ class GameController {
     _renderScoreBoard(gameId) {
         window.highScores.renderList(document.getElementById('scoreList'), gameId);
         this._updateTopScore(gameId);
+        this._updateScoreTabs(gameId);
+    }
+
+    _updateScoreTabs(active) {
+        var tabs = document.querySelectorAll('.score-tab');
+        tabs.forEach(function(t) {
+            var gid = t.getAttribute('data-game');
+            t.classList.toggle('score-tab--active', gid === (active || 'snake'));
+        });
     }
 
     _animateCoinDrop() {
@@ -377,6 +440,6 @@ class GameController {
 // === BOOT ===
 document.addEventListener('DOMContentLoaded', function() {
     window.game = new GameController();
-    console.log('8-BIT ARCADE v2 — READY');
+    console.log('8-BIT ARCADE v3 - READY');
     console.log('  C = insert coin | ENTER/SPC = start | Konami = +30 credits');
 });

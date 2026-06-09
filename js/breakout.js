@@ -34,6 +34,9 @@ class BreakoutGame {
         this.onScore  = null;
         this.onDeath  = null;
         this.onLife   = null;
+        this.combo    = 0;
+        this.comboTimer = 0;
+        this.comboDisplay = null;  // { value, x, y, age }
 
         this._bindInput();
         this.resize();
@@ -83,6 +86,36 @@ class BreakoutGame {
           [4,2,3,2,3,3,2,3,2,4],
           [4,3,2,3,2,2,3,2,3,4],
           [4,4,4,4,4,4,4,4,4,4] ],
+
+        // 6 - zigzag
+        [ [1,0,1,0,1,0,1,0,1,0],
+          [0,2,0,2,0,2,0,2,0,2],
+          [1,0,3,0,1,0,3,0,1,0],
+          [0,2,0,2,0,2,0,2,0,2],
+          [2,0,2,0,2,0,2,0,2,0],
+          [0,3,0,1,0,1,0,3,0,1],
+          [1,1,2,1,2,2,1,2,1,1] ],
+
+        // 7 - spiral
+        [ [2,2,2,2,2,2,2,2,2,2],
+          [2,0,0,0,0,0,0,0,0,2],
+          [2,0,3,3,3,3,3,3,0,2],
+          [2,0,3,0,0,0,0,3,0,2],
+          [2,0,3,0,1,1,0,3,0,2],
+          [2,0,3,0,1,1,0,3,0,2],
+          [2,0,3,0,0,0,0,3,0,2],
+          [2,0,0,0,0,0,0,0,0,2],
+          [2,2,2,2,2,2,2,2,2,2] ],
+
+        // 8 - massacre
+        [ [4,3,2,3,2,2,3,2,3,4],
+          [3,2,3,2,3,3,2,3,2,3],
+          [2,3,2,3,2,2,3,2,3,2],
+          [3,2,3,4,3,3,4,3,2,3],
+          [2,3,2,3,2,2,3,2,3,2],
+          [3,2,3,2,3,3,2,3,2,3],
+          [4,3,2,3,2,2,3,2,3,4],
+          [3,2,3,2,3,3,2,3,2,3] ],
     ];
 
     // ─── Public API ──────────────────────────────────────────
@@ -216,6 +249,9 @@ class BreakoutGame {
             trail: [],
         }];
         this.particles = [];
+        this.combo     = 0;
+        this.comboTimer= 0;
+        this.comboDisplay = null;
     }
 
     // ─── Game loop ───────────────────────────────────────────
@@ -241,6 +277,8 @@ class BreakoutGame {
         this._updateLasers(dt);
         this._updateParticles();
         this._expirePowerUps();
+        if (this.comboTimer > 0) { this.comboTimer -= dt; if (this.comboTimer <= 0) this.combo = 0; }
+        if (this.comboDisplay) { this.comboDisplay.age += dt; if (this.comboDisplay.age > 60) this.comboDisplay = null; }
 
         // Check level complete
         if (this.bricks.every(b => b.type === 4 || b.hp <= 0)) {
@@ -355,8 +393,14 @@ class BreakoutGame {
     }
 
     _destroyBrick(idx, br) {
+        this.combo++;
+        this.comboTimer = 90;
+        var bonus = this.combo >= 8 ? 4 : this.combo >= 5 ? 3 : this.combo >= 3 ? 2 : 1;
+        if (this.combo >= 3) {
+            this.comboDisplay = { value: this.combo, x: br.x + br.w/2, y: br.y, age: 0 };
+        }
         var pts  = br.type === 2 ? 20 : br.type === 3 ? 30 : 10;
-        this.score += pts * this.level;
+        this.score += pts * this.level * bonus;
         this._spawnBrickParticles(br);
 
         if (br.type === 3) this._explodeBrick(br);
@@ -378,6 +422,7 @@ class BreakoutGame {
     }
 
     _explodeBrick(center) {
+        if (window.achievements) window.achievements.check('breakout_explosive');
         for (var i = 0; i < this.bricks.length; i++) {
             var b = this.bricks[i];
             if (b.hp <= 0 || b.type === 4) continue;
@@ -408,6 +453,7 @@ class BreakoutGame {
 
     _applyPowerUp(type) {
         if (window.audio) { window.audio.init(); window.audio.coin(); }
+        if (window.achievements) window.achievements.check('breakout_powerup', { type: type });
         var dur = 300; // frames
         if (type === 'multi') {
             // Spawn 2 extra balls from existing balls
@@ -482,6 +528,7 @@ class BreakoutGame {
 
     _levelComplete() {
         if (window.audio) window.audio.highScore();
+        if (window.achievements) window.achievements.check('breakout_levelclear');
         this.level++;
         var self = this;
         this.state = 'levelup';
@@ -540,6 +587,26 @@ class BreakoutGame {
         this._drawBalls();
         this._drawPaddle();
         this._drawParticles();
+
+        // Combo display
+        if (this.comboDisplay && this.combo >= 3) {
+            var cd  = this.comboDisplay;
+            var t   = cd.age / 60;
+            var ctx = this.ctx;
+            ctx.globalAlpha = 1 - t;
+            ctx.fillStyle   = this.combo >= 8 ? '#ff00ff' : this.combo >= 5 ? '#ffff00' : '#00ffff';
+            ctx.font        = Math.round(this.W * 0.038) + 'px \'Press Start 2P\', monospace';
+            ctx.textAlign   = 'center';
+            ctx.fillText('x' + cd.value + ' COMBO!', cd.x, cd.y - t * 24);
+            ctx.textAlign   = 'left';
+            ctx.globalAlpha = 1;
+        }
+        // Combo streak bar (top of screen)
+        if (this.combo >= 2) {
+            var barW = Math.min(1, this.combo / 10) * this.W * 0.5;
+            this.ctx.fillStyle = this.combo >= 8 ? '#ff00ff' : this.combo >= 5 ? '#ffff00' : '#00ffff';
+            this.ctx.fillRect(this.W/2 - barW/2, 2, barW, 3);
+        }
 
         if (this.state === 'idle')   this._drawCentreText('READY', 'rgba(0,255,255,0.8)');
         if (this.state === 'paused') this._drawPauseOverlay();

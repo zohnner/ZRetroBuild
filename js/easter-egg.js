@@ -35,6 +35,7 @@ class KonamiCode {
 
         this._rainbow();
         if (window.audio) { window.audio.init(); window.audio.konami(); }
+        if (window.achievements) window.achievements.check('konami');
 
         var self = this;
         setTimeout(function() { self.activated = false; self.pos = 0; }, 5000);

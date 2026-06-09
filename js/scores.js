@@ -13,6 +13,11 @@ class HighScoreManager {
                 { initials:'MXR', score:2400 }, { initials:'NES', score:1600 },
                 { initials:'C64', score: 800 },
             ],
+            invaders: [
+                { initials:'INV', score:8800 }, { initials:'UFO', score:6600 },
+                { initials:'ZRB', score:4400 }, { initials:'ACE', score:2200 },
+                { initials:'C64', score:1100 },
+            ],
         };
         this._cache = {};
     }

@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="8-Bit Arcade — Snake, Breakout, high scores, neon lights">
+    <meta name="description" content="8-Bit Arcade - Snake, Breakout, Space Invaders, achievements">
     <meta name="author" content="ZRetroBuild">
     <meta property="og:title" content="8-BIT ARCADE">
     <meta property="og:description" content="Insert coin. Pick your game. Beat the high score.">
     <meta property="og:type" content="website">
     <title>8-BIT ARCADE</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/scanlines.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -20,190 +18,207 @@
 </head>
 <body>
 
-    <canvas id="bgCanvas" class="bg-canvas" aria-hidden="true"></canvas>
-    <div class="crt-overlay" aria-hidden="true"></div>
-    <div class="vignette"    aria-hidden="true"></div>
+<canvas id="bgCanvas" class="bg-canvas" aria-hidden="true"></canvas>
+<div class="crt-overlay" aria-hidden="true"></div>
+<div class="vignette"    aria-hidden="true"></div>
 
-    <!-- ═══════════════════════════════════════
-         SPLASH SCREEN
-    ════════════════════════════════════════ -->
-    <div id="splashScreen" class="splash-screen">
+<!-- SPLASH SCREEN -->
+<div id="splashScreen" class="splash-screen">
 
-        <div class="marquee marquee--top" aria-hidden="true">
-            <div class="marquee__track">
-                <span class="marquee__content">
-                    &#9733; HIGH SCORE &nbsp;&middot;&nbsp; INSERT COIN &nbsp;&middot;&nbsp;
-                    8-BIT ARCADE &nbsp;&middot;&nbsp; SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp;
-                    1 OR 2 PLAYERS &nbsp;&middot;&nbsp; &#9733; HIGH SCORE &nbsp;&middot;&nbsp; INSERT COIN &nbsp;&middot;&nbsp;
-                    8-BIT ARCADE &nbsp;&middot;&nbsp; SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp;
-                    1 OR 2 PLAYERS &nbsp;&middot;&nbsp;
-                </span>
-                <span class="marquee__content" aria-hidden="true">
-                    &#9733; HIGH SCORE &nbsp;&middot;&nbsp; INSERT COIN &nbsp;&middot;&nbsp;
-                    8-BIT ARCADE &nbsp;&middot;&nbsp; SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp;
-                    1 OR 2 PLAYERS &nbsp;&middot;&nbsp;
-                </span>
+    <div class="marquee marquee--top" aria-hidden="true">
+        <div class="marquee__track">
+            <span class="marquee__content">
+                &#9733; HIGH SCORE &nbsp;&middot;&nbsp; INSERT COIN &nbsp;&middot;&nbsp;
+                SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp; INVADERS &nbsp;&middot;&nbsp;
+                8-BIT ARCADE &nbsp;&middot;&nbsp; 1 OR 2 PLAYERS &nbsp;&middot;&nbsp;
+                &#9733; HIGH SCORE &nbsp;&middot;&nbsp; INSERT COIN &nbsp;&middot;&nbsp;
+                SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp; INVADERS &nbsp;&middot;&nbsp;
+                8-BIT ARCADE &nbsp;&middot;&nbsp; 1 OR 2 PLAYERS &nbsp;&middot;&nbsp;
+            </span>
+            <span class="marquee__content" aria-hidden="true">
+                &#9733; HIGH SCORE &nbsp;&middot;&nbsp; INSERT COIN &nbsp;&middot;&nbsp;
+                SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp; INVADERS &nbsp;&middot;&nbsp;
+            </span>
+        </div>
+    </div>
+
+    <main class="screen-panel" id="screenPanel">
+        <div class="screen-glow"></div>
+        <span class="corner corner--tl" aria-hidden="true">&#9556;</span>
+        <span class="corner corner--tr" aria-hidden="true">&#9559;</span>
+        <span class="corner corner--bl" aria-hidden="true">&#9562;</span>
+        <span class="corner corner--br" aria-hidden="true">&#9565;</span>
+
+        <!-- Title -->
+        <header class="title-block">
+            <div class="title-rule" aria-hidden="true">&middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot;</div>
+            <h1 class="game-title"><span class="glitch" data-text="8-BIT">8-BIT</span></h1>
+            <h1 class="game-title game-title--cyan"><span class="glitch" data-text="ARCADE">ARCADE</span></h1>
+            <div class="title-rule" aria-hidden="true">&middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot;</div>
+            <p class="game-subtitle">WHERE LEGENDS ARE MADE</p>
+        </header>
+
+        <!-- Score tabs -->
+        <div class="score-tabs" role="tablist" aria-label="Game scores">
+            <button class="score-tab score-tab--active" data-game="snake"    role="tab">SNAKE</button>
+            <button class="score-tab"                   data-game="breakout" role="tab">BRKOUT</button>
+            <button class="score-tab"                   data-game="invaders" role="tab">INVDRS</button>
+        </div>
+
+        <!-- High Score Board -->
+        <section class="scoreboard" aria-label="High scores">
+            <ol id="scoreList" class="scoreboard__list"></ol>
+        </section>
+
+        <!-- Achievements strip -->
+        <div class="ach-strip" aria-label="Achievements">
+            <div id="achGallery" class="ach-gallery"></div>
+            <div class="ach-count-row">
+                <span id="achCount" class="ach-count">0 / 15</span>
+                <span class="ach-label">ACHIEVEMENTS</span>
             </div>
         </div>
 
-        <main class="screen-panel" id="screenPanel">
-            <div class="screen-glow"></div>
-            <span class="corner corner--tl" aria-hidden="true">&#9556;</span>
-            <span class="corner corner--tr" aria-hidden="true">&#9559;</span>
-            <span class="corner corner--bl" aria-hidden="true">&#9562;</span>
-            <span class="corner corner--br" aria-hidden="true">&#9565;</span>
+        <!-- Credits -->
+        <div class="credit-bar" aria-live="polite">
+            <span class="credit-bar__label">CREDITS</span>
+            <span id="creditDisplay" class="credit-bar__value">00</span>
+        </div>
 
-            <header class="title-block">
-                <div class="title-rule" aria-hidden="true">&middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot;</div>
-                <h1 class="game-title">
-                    <span class="glitch" data-text="8-BIT">8-BIT</span>
-                </h1>
-                <h1 class="game-title game-title--cyan">
-                    <span class="glitch" data-text="ARCADE">ARCADE</span>
-                </h1>
-                <div class="title-rule" aria-hidden="true">&middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot; &middot;</div>
-                <p class="game-subtitle">WHERE LEGENDS ARE MADE</p>
-            </header>
+        <!-- Player select -->
+        <div class="player-select" role="group" aria-label="Player count">
+            <button id="btn1P" class="player-btn player-btn--active" data-players="1">&#9664; 1 PLAYER</button>
+            <button id="btn2P" class="player-btn" data-players="2">2 PLAYERS &#9654;</button>
+        </div>
 
-            <section class="scoreboard" aria-label="High scores">
-                <h2 class="scoreboard__title">&#8212; HIGH SCORES &#8212;</h2>
-                <ol id="scoreList" class="scoreboard__list"></ol>
-            </section>
+        <!-- Start -->
+        <button id="startBtn" class="start-btn" aria-label="Press Start">
+            <span>&#9654;&nbsp;&nbsp;PRESS START&nbsp;&nbsp;&#9664;</span>
+        </button>
 
-            <div class="credit-bar" aria-live="polite">
-                <span class="credit-bar__label">CREDITS</span>
-                <span id="creditDisplay" class="credit-bar__value">00</span>
+        <!-- Coin slot -->
+        <div id="coinSlot" class="coin-slot"
+             role="button" tabindex="0"
+             aria-label="Insert coin - click or press C">
+            <p class="coin-slot__label">INSERT COIN</p>
+            <div class="coin-slot__opening"><span>&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;</span></div>
+            <p class="coin-slot__hint">[ CLICK &nbsp;&middot;&nbsp; C KEY ]</p>
+        </div>
+
+        <!-- Status row -->
+        <div class="status-row">
+            <div class="stat-chip">
+                <span class="stat-chip__label">HI-SCORE</span>
+                <span id="topScore" class="stat-chip__value">00000</span>
             </div>
-
-            <div class="player-select" role="group" aria-label="Player count">
-                <button id="btn1P" class="player-btn player-btn--active" data-players="1">&#9664; 1 PLAYER</button>
-                <button id="btn2P" class="player-btn" data-players="2">2 PLAYERS &#9654;</button>
-            </div>
-
-            <button id="startBtn" class="start-btn" aria-label="Press Start">
-                <span>&#9654;&nbsp;&nbsp;PRESS START&nbsp;&nbsp;&#9664;</span>
+            <button id="muteBtn" class="icon-btn" aria-label="Toggle sound">
+                <span id="muteIcon">[SFX]</span>
             </button>
-
-            <div id="coinSlot" class="coin-slot"
-                 role="button" tabindex="0"
-                 aria-label="Insert coin — click or press C">
-                <p class="coin-slot__label">INSERT COIN</p>
-                <div class="coin-slot__opening">
-                    <span>&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;</span>
-                </div>
-                <p class="coin-slot__hint">[ CLICK &nbsp;&middot;&nbsp; C KEY ]</p>
+            <div class="stat-chip stat-chip--right">
+                <span class="stat-chip__label">PLAYERS</span>
+                <span id="playerDisplay" class="stat-chip__value">1</span>
             </div>
+        </div>
 
-            <div class="status-row">
-                <div class="stat-chip">
-                    <span class="stat-chip__label">HI-SCORE</span>
-                    <span id="topScore" class="stat-chip__value">00000</span>
-                </div>
-                <button id="muteBtn" class="icon-btn" aria-label="Toggle sound">
-                    <span id="muteIcon">[SFX]</span>
-                </button>
-                <div class="stat-chip stat-chip--right">
-                    <span class="stat-chip__label">PLAYERS</span>
-                    <span id="playerDisplay" class="stat-chip__value">1</span>
-                </div>
-            </div>
+        <footer class="screen-footer">&copy; 1987&ndash;2025 &nbsp;&middot;&nbsp; ZRetroBuild</footer>
+    </main>
 
-            <footer class="screen-footer">
-                &copy; 1987&ndash;2025 &nbsp;&middot;&nbsp; ZRetroBuild
-            </footer>
-        </main>
-
-        <div class="marquee marquee--bottom" aria-hidden="true">
-            <div class="marquee__track marquee__track--rev">
-                <span class="marquee__content">
-                    &#9654; SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp; BEAT THE HIGH SCORE &nbsp;&middot;&nbsp;
-                    KONAMI: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA &nbsp;&middot;&nbsp;
-                    ARROWS / WASD / MOUSE / SWIPE &nbsp;&middot;&nbsp; GOOD LUCK PLAYER ONE &nbsp;&middot;&nbsp;
-                    &#9654; SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp; BEAT THE HIGH SCORE &nbsp;&middot;&nbsp;
-                    KONAMI: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA &nbsp;&middot;&nbsp;
-                </span>
-                <span class="marquee__content" aria-hidden="true">
-                    &#9654; SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp; BEAT THE HIGH SCORE &nbsp;&middot;&nbsp;
-                    KONAMI: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA &nbsp;&middot;&nbsp;
-                </span>
-            </div>
+    <div class="marquee marquee--bottom" aria-hidden="true">
+        <div class="marquee__track marquee__track--rev">
+            <span class="marquee__content">
+                &#9654; SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp; INVADERS &nbsp;&middot;&nbsp;
+                BEAT THE HIGH SCORE &nbsp;&middot;&nbsp;
+                KONAMI: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA = +30 CREDITS &nbsp;&middot;&nbsp;
+                ARROWS / WASD / MOUSE / SWIPE &nbsp;&middot;&nbsp; GOOD LUCK &nbsp;&middot;&nbsp;
+                &#9654; SNAKE &nbsp;&middot;&nbsp; BREAKOUT &nbsp;&middot;&nbsp; INVADERS &nbsp;&middot;&nbsp;
+                BEAT THE HIGH SCORE &nbsp;&middot;&nbsp;
+            </span>
+            <span class="marquee__content" aria-hidden="true">
+                KONAMI: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA = +30 CREDITS &nbsp;&middot;&nbsp;
+            </span>
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════
-         GAME SELECT SCREEN
-    ════════════════════════════════════════ -->
-    <div id="selectScreen" class="select-screen hidden" aria-label="Game select"></div>
+</div>
 
-    <!-- ═══════════════════════════════════════
-         GAME SCREEN
-    ════════════════════════════════════════ -->
-    <div id="gameScreen" class="game-screen hidden" aria-label="Arcade game">
-        <div class="game-panel">
+<!-- GAME SELECT -->
+<div id="selectScreen" class="select-screen hidden" aria-label="Game select"></div>
 
-            <div class="game-hud">
-                <div class="hud-cell">
-                    <span class="hud-label">SCORE</span>
-                    <span id="liveScore" class="hud-value">00000</span>
-                </div>
-                <div class="hud-cell hud-cell--center">
-                    <span id="gameName" class="game-name">8-BIT ARCADE</span>
-                </div>
-                <div class="hud-cell hud-cell--right">
-                    <span class="hud-label">BEST</span>
-                    <span id="liveBest" class="hud-value">00000</span>
-                </div>
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="game-screen hidden" aria-label="Arcade game">
+    <div class="game-panel">
+
+        <div class="game-hud">
+            <div class="hud-cell">
+                <span class="hud-label">SCORE</span>
+                <span id="liveScore" class="hud-value">00000</span>
             </div>
-
-            <!-- Lives (Breakout only) -->
-            <div id="livesDisplay" class="lives-display hidden" aria-live="polite"></div>
-
-            <div class="canvas-wrapper">
-                <canvas id="gameCanvas" class="game-canvas"></canvas>
-
-                <div id="gameOverlay" class="game-overlay-msg hidden">
-                    <p id="overlayTitle"    class="overlay-title"></p>
-                    <p id="overlaySubtitle" class="overlay-subtitle"></p>
-
-                    <div id="initialsForm" class="initials-form hidden">
-                        <p class="initials-prompt">ENTER INITIALS</p>
-                        <input id="initialsInput"
-                               class="initials-input"
-                               maxlength="3"
-                               autocomplete="off"
-                               spellcheck="false"
-                               aria-label="Your initials">
-                        <button id="saveScoreBtn" class="overlay-btn overlay-btn--save">
-                            &#9733; SAVE SCORE
-                        </button>
-                    </div>
-
-                    <div class="overlay-actions">
-                        <button id="restartBtn" class="overlay-btn">&#9654; PLAY AGAIN</button>
-                        <button id="exitBtn"    class="overlay-btn overlay-btn--dim">&#10006; EXIT</button>
-                    </div>
-                </div>
+            <div class="hud-cell hud-cell--center">
+                <span id="gameName" class="game-name">8-BIT ARCADE</span>
             </div>
-
-            <div class="game-footer-bar">
-                <span class="game-hints">ARROWS / WASD / MOUSE</span>
-                <button id="pauseBtn"   class="icon-btn-sm">&#9646;&#9646; PAUSE</button>
-                <button id="exitTopBtn" class="icon-btn-sm">&#10006; EXIT</button>
+            <div class="hud-cell hud-cell--right">
+                <span class="hud-label">BEST</span>
+                <span id="liveBest" class="hud-value">00000</span>
             </div>
         </div>
-    </div>
 
-    <!-- Konami toast -->
-    <div id="konamiToast" class="konami-toast hidden" aria-live="polite">
-        &#9889; KONAMI CODE &mdash; +30 CREDITS &#9889;
-    </div>
+        <div id="livesDisplay" class="lives-display hidden" aria-live="polite"></div>
 
-    <script src="js/audio.js"></script>
-    <script src="js/scores.js"></script>
-    <script src="js/snake.js"></script>
-    <script src="js/breakout.js"></script>
-    <script src="js/game-select.js"></script>
-    <script src="js/easter-egg.js"></script>
-    <script src="js/main.js"></script>
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" class="game-canvas"></canvas>
+
+            <div id="gameOverlay" class="game-overlay-msg hidden">
+                <p id="overlayTitle"    class="overlay-title"></p>
+                <p id="overlaySubtitle" class="overlay-subtitle"></p>
+
+                <div id="initialsForm" class="initials-form hidden">
+                    <p class="initials-prompt">ENTER INITIALS</p>
+                    <input id="initialsInput" class="initials-input" maxlength="3"
+                           autocomplete="off" spellcheck="false" aria-label="Your initials">
+                    <button id="saveScoreBtn" class="overlay-btn overlay-btn--save">
+                        &#9733; SAVE SCORE
+                    </button>
+                </div>
+
+                <div class="overlay-actions">
+                    <button id="restartBtn" class="overlay-btn">&#9654; PLAY AGAIN</button>
+                    <button id="exitBtn"    class="overlay-btn overlay-btn--dim">&#10006; EXIT</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-footer-bar">
+            <span class="game-hints" id="gameHints">ARROWS / WASD / MOUSE</span>
+            <button id="pauseBtn"   class="icon-btn-sm">&#9646;&#9646; PAUSE</button>
+            <button id="exitTopBtn" class="icon-btn-sm">&#10006; EXIT</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Konami toast -->
+<div id="konamiToast" class="konami-toast hidden" aria-live="polite">
+    &#9889; KONAMI CODE &mdash; +30 CREDITS &#9889;
+</div>
+
+<!-- Achievement toast -->
+<div id="achievementToast" class="achievement-toast hidden" aria-live="polite" role="alert">
+    <div class="ach-toast-icon-wrap"><span class="ach-icon"></span></div>
+    <div class="ach-toast-body">
+        <div class="ach-toast-label">ACHIEVEMENT UNLOCKED</div>
+        <div class="ach-title"></div>
+        <div class="ach-desc"></div>
+    </div>
+</div>
+
+<script src="js/audio.js"></script>
+<script src="js/scores.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/snake.js"></script>
+<script src="js/breakout.js"></script>
+<script src="js/invaders.js"></script>
+<script src="js/game-select.js"></script>
+<script src="js/easter-egg.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

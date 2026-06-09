@@ -19,7 +19,8 @@ class SnakeGame {
         this.snake    = [];
         this.dir      = { x: 1, y: 0 };
         this.nextDir  = { x: 1, y: 0 };
-        this.food     = null;
+        this.food      = null;
+        this.bonusFood = null;  // { x, y, expires } high-value timed item
         this.powerUp  = null;  // { x, y, type, expires }
         this.walls    = [];    // obstacle cells for level 2+
         this.particles= [];
@@ -53,6 +54,7 @@ class SnakeGame {
         this.slowTimer  = 0;
         this.particles = [];
         this.powerUp  = null;
+        this.bonusFood = null;
         this.walls    = [];
         this.state    = 'playing';
 
@@ -130,25 +132,65 @@ class SnakeGame {
         var walls = [];
         var G = this.GRID;
         if (lvl === 2) {
-            // Cross walls
+            // Horizontal bar with gap
             for (var i = 3; i < G-3; i++) {
                 if (i < 8 || i > 12) walls.push({ x: i, y: Math.floor(G/2) });
             }
         } else if (lvl === 3) {
-            // Box corners
-            var corners = [
-                { x:3, y:3 }, { x:4, y:3 }, { x:3, y:4 },
-                { x:G-4, y:3 }, { x:G-5, y:3 }, { x:G-4, y:4 },
-                { x:3, y:G-4 }, { x:4, y:G-4 }, { x:3, y:G-5 },
-                { x:G-4, y:G-4 }, { x:G-5, y:G-4 }, { x:G-4, y:G-5 },
-            ];
-            walls = corners;
-        } else if (lvl >= 4) {
-            // Scattered obstacles
-            for (var j = 0; j < 12; j++) {
-                var wx = 3 + Math.floor(Math.random() * (G-6));
-                var wy = 3 + Math.floor(Math.random() * (G-6));
-                walls.push({ x: wx, y: wy });
+            // Corner blocks
+            [[3,3],[4,3],[3,4],[G-4,3],[G-5,3],[G-4,4],
+             [3,G-4],[4,G-4],[3,G-5],[G-4,G-4],[G-5,G-4],[G-4,G-5]
+            ].forEach(function(p) { walls.push({ x:p[0], y:p[1] }); });
+        } else if (lvl === 4) {
+            // Plus sign
+            for (var i = 4; i < G-4; i++) {
+                walls.push({ x: i, y: Math.floor(G/2) });
+                walls.push({ x: Math.floor(G/2), y: i });
+            }
+        } else if (lvl === 5) {
+            // Diagonal stripes (wrap-through enabled at this level)
+            for (var d = 4; d < G-4; d += 3) {
+                walls.push({ x: d, y: d });
+                walls.push({ x: G-1-d, y: d });
+            }
+        } else if (lvl === 6) {
+            // Two vertical bars with gaps
+            for (var r = 2; r < G-2; r++) {
+                if (r < 7 || r > 13) {
+                    walls.push({ x: Math.floor(G/3),   y: r });
+                    walls.push({ x: Math.floor(2*G/3), y: r });
+                }
+            }
+        } else if (lvl === 7) {
+            // Ring
+            for (var a = 0; a < 360; a += 18) {
+                var rad = a * Math.PI / 180;
+                var rx  = Math.round(G/2 + 5 * Math.cos(rad));
+                var ry  = Math.round(G/2 + 5 * Math.sin(rad));
+                if (rx >= 0 && rx < G && ry >= 0 && ry < G) walls.push({ x: rx, y: ry });
+            }
+        } else if (lvl === 8) {
+            // Scattered dense
+            for (var j = 0; j < 16; j++) {
+                walls.push({ x: 2 + Math.floor(Math.random()*(G-4)), y: 2 + Math.floor(Math.random()*(G-4)) });
+            }
+        } else if (lvl === 9) {
+            // Checkerboard quarter
+            for (var cy = 2; cy < Math.floor(G/2); cy += 2) {
+                for (var cx = 2; cx < Math.floor(G/2); cx += 2) {
+                    walls.push({ x: cx, y: cy });
+                    walls.push({ x: G-1-cx, y: G-1-cy });
+                }
+            }
+        } else if (lvl >= 10) {
+            // Spiral
+            var dirs = [{x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1}];
+            var wx2=1, wy2=1, di=0, steps=G-2, taken=0, total=0;
+            while (total < 24) {
+                walls.push({ x: wx2, y: wy2 });
+                wx2 += dirs[di].x; wy2 += dirs[di].y; taken++; total++;
+                if (taken === steps) { di=(di+1)%4; taken=0; if (di%2===0) steps--; }
+                if (wx2<0||wx2>=G||wy2<0||wy2>=G) break;
             }
         }
         return walls;
@@ -157,7 +199,8 @@ class SnakeGame {
     _advanceLevel() {
         this.level++;
         this.walls = this._levelWalls(this.level);
-        this.speed = Math.max(3, 8 - this.level);
+        this.speed = Math.max(3, 8 - Math.min(this.level, 6));
+        if (window.achievements) window.achievements.check('snake_level', { level: this.level });
         // Remove any wall that's on the snake
         var self = this;
         this.walls = this.walls.filter(function(w) {
@@ -191,9 +234,14 @@ class SnakeGame {
         var head    = this.snake[0];
         var newHead = { x: head.x + this.dir.x, y: head.y + this.dir.y };
 
-        // Wall collision
+        // Wall collision — wrap at level 5+, die otherwise
         if (newHead.x < 0 || newHead.x >= this.GRID || newHead.y < 0 || newHead.y >= this.GRID) {
-            this._die(); return;
+            if (this.level >= 5) {
+                newHead.x = (newHead.x + this.GRID) % this.GRID;
+                newHead.y = (newHead.y + this.GRID) % this.GRID;
+            } else {
+                this._die(); return;
+            }
         }
         // Self collision
         for (var seg of this.snake) {
@@ -215,12 +263,25 @@ class SnakeGame {
             if (this.score % 100 === 0) this._advanceLevel();
             if (this.onScore) this.onScore(this.score);
             if (window.audio) window.audio.eat();
+            if (window.achievements) { window.achievements.check('score', { score: this.score }); window.achievements.check('snake_length', { length: this.snake.length }); }
 
-            // Maybe spawn a power-up
-            if (!this.powerUp && Math.random() < 0.25) this._spawnPowerUp();
+            // Maybe spawn a power-up or bonus food
+            if (!this.powerUp && Math.random() < 0.20) this._spawnPowerUp();
+            if (!this.bonusFood && Math.random() < 0.15) this._spawnBonusFood();
         } else {
             this.snake.pop();
         }
+
+        // Eat bonus food
+        if (this.bonusFood && newHead.x === this.bonusFood.x && newHead.y === this.bonusFood.y) {
+            var bpts = 30 * this.level * this.multiplier;
+            this.score += bpts;
+            this._spawnEatParticles(newHead);
+            this.bonusFood = null;
+            if (this.onScore) this.onScore(this.score);
+            if (window.audio) { window.audio.init(); window.audio.coin(); }
+        }
+        if (this.bonusFood && this.frameCount > this.bonusFood.expires) this.bonusFood = null;
 
         // Eat power-up
         if (this.powerUp && newHead.x === this.powerUp.x && newHead.y === this.powerUp.y) {
@@ -279,6 +340,7 @@ class SnakeGame {
 
     _applyPowerUp(type) {
         if (window.audio) { window.audio.init(); window.audio.coin(); }
+        if (window.achievements) window.achievements.check('snake_powerup', { type: type });
         if (type === 'slow') {
             this.slowTimer = 200;
             if (this.speed < 14) this.speed += 3;
@@ -291,6 +353,17 @@ class SnakeGame {
             this._spawnShrinkParticles();
         }
         if (this.onScore) this.onScore(this.score);
+    }
+
+    _spawnBonusFood() {
+        var pos;
+        var attempts = 0;
+        do {
+            pos = { x: Math.floor(Math.random()*this.GRID), y: Math.floor(Math.random()*this.GRID) };
+            attempts++;
+        } while (this._occupied(pos) && attempts < 40);
+        if (attempts >= 40) return;
+        this.bonusFood = { x: pos.x, y: pos.y, expires: this.frameCount + 100 };
     }
 
     _occupied(pos) {
@@ -401,6 +474,25 @@ class SnakeGame {
             ctx.textAlign    = 'left';
             ctx.textBaseline = 'alphabetic';
             ctx.shadowBlur   = 0;
+        }
+
+        // Bonus food (orange star, limited time)
+        if (this.bonusFood) {
+            var bpulse = 0.5 + 0.5 * Math.sin(this.frameCount * 0.4);
+            var brem   = Math.max(0, (this.bonusFood.expires - this.frameCount) / 100);
+            ctx.shadowBlur  = 16 * bpulse;
+            ctx.shadowColor = '#ff7700';
+            ctx.fillStyle   = 'rgba(255,120,0,' + (0.6 + 0.4*bpulse) + ')';
+            ctx.fillRect(this.bonusFood.x*C+2, this.bonusFood.y*C+2, C-4, C-4);
+            ctx.fillStyle = '#ffdd00';
+            ctx.font      = 'bold ' + Math.max(6, Math.round(C*0.55)) + 'px monospace';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('3X', this.bonusFood.x*C+C/2, this.bonusFood.y*C+C/2);
+            ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+            // Time bar across bottom of cell
+            ctx.fillStyle = 'rgba(255,120,0,' + brem + ')';
+            ctx.fillRect(this.bonusFood.x*C, this.bonusFood.y*C+C-2, Math.round(C*brem), 2);
+            ctx.shadowBlur = 0;
         }
 
         // Food
