@@ -1,0 +1,359 @@
+/* Main Container */
+.arcade-container {
+    position: relative;
+    text-align: center;
+    padding: var(--spacing-lg);
+    max-width: 900px;
+    width: 90%;
+    border: 4px solid var(--neon-cyan);
+    box-shadow: 0 0 20px var(--neon-cyan), inset 0 0 10px var(--crt-glow);
+    background: rgba(10, 12, 15, 0.85);
+    backdrop-filter: blur(2px);
+    z-index: 1;
+    transition: box-shadow var(--transition-normal);
+}
+
+.arcade-container:hover {
+    box-shadow: 0 0 30px var(--neon-cyan), inset 0 0 20px var(--crt-glow);
+}
+
+/* Ambient Glow */
+.ambient-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, var(--crt-glow) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Title Section */
+.title-wrapper {
+    margin-bottom: var(--spacing-md);
+}
+
+.arcade-title {
+    font-size: clamp(2rem, 8vw, 4.5rem);
+    line-height: 1.2;
+    margin: 0;
+}
+
+.glitch-text {
+    position: relative;
+    display: inline-block;
+    color: var(--neon-pink);
+    text-shadow:
+        0 0 5px var(--neon-pink),
+        0 0 10px var(--neon-pink),
+        0 0 20px var(--neon-pink),
+        0 0 40px var(--neon-pink);
+    transition: all var(--transition-fast);
+}
+
+.glitch-text:hover {
+    animation: glitch 0.3s infinite;
+    cursor: pointer;
+}
+
+/* Subtitle */
+.subtitle {
+    font-family: var(--font-terminal);
+    font-size: 0.8rem;
+    color: var(--neon-green);
+    letter-spacing: 4px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.8;
+    animation: pulse 2s infinite;
+}
+
+/* Credit Display */
+.credit-display {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-xs);
+    border: 1px solid var(--neon-cyan);
+    display: inline-block;
+    background: rgba(0, 255, 255, 0.1);
+    font-size: 0.8rem;
+}
+
+.credit-label {
+    color: var(--neon-cyan);
+    margin-right: var(--spacing-xs);
+}
+
+.credit-amount {
+    color: var(--neon-green);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Start Button */
+.start-button {
+    position: relative;
+    font-family: var(--font-pixel);
+    font-size: 1rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: transparent;
+    border: 3px solid var(--neon-green);
+    color: var(--neon-green);
+    cursor: pointer;
+    margin-bottom: var(--spacing-lg);
+    text-transform: uppercase;
+    overflow: hidden;
+    transition: all var(--transition-fast);
+}
+
+.button-text {
+    position: relative;
+    z-index: 2;
+}
+
+.button-glow {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 255, 0, 0.3),
+        transparent
+    );
+    transition: left 0.5s ease;
+    z-index: 1;
+}
+
+.start-button:hover {
+    background: var(--neon-green);
+    color: var(--dark-bg);
+    box-shadow: 0 0 15px var(--neon-green);
+    transform: scale(1.05);
+}
+
+.start-button:hover .button-glow {
+    left: 100%;
+}
+
+.start-button:active {
+    animation: buttonPress 0.1s ease;
+}
+
+/* Coin Slot */
+.coin-slot {
+    margin: var(--spacing-md) auto;
+    padding: var(--spacing-sm);
+    width: 200px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.coin-slot:hover {
+    transform: scale(1.05);
+}
+
+.coin-slot__insert {
+    font-size: 0.7rem;
+    color: var(--neon-yellow);
+    margin-bottom: var(--spacing-xs);
+    letter-spacing: 2px;
+    animation: blink 1.5s infinite;
+}
+
+.coin-slot__graphic {
+    font-family: monospace;
+    font-size: 1.2rem;
+    color: var(--neon-cyan);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.slot-top,
+.slot-middle,
+.slot-bottom {
+    line-height: 0.8;
+}
+
+.coin-instruction {
+    font-size: 0.5rem;
+    color: var(--neon-green);
+    margin-top: var(--spacing-xs);
+    opacity: 0.6;
+}
+
+/* Game Info Panel */
+.game-info {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-sm);
+    border-top: 1px solid var(--neon-cyan);
+    border-bottom: 1px solid var(--neon-cyan);
+    font-size: 0.7rem;
+}
+
+.info-line {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.info-label {
+    color: var(--neon-cyan);
+}
+
+.info-value {
+    color: var(--neon-green);
+    font-weight: bold;
+}
+
+/* Easter Egg Indicator */
+.easter-egg-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--neon-pink);
+    color: var(--dark-bg);
+    padding: var(--spacing-xs);
+    font-size: 0.6rem;
+    font-family: var(--font-pixel);
+    z-index: 1000;
+    transform: translateX(200%);
+    transition: transform 0.3s ease;
+    pointer-events: none;
+}
+
+.easter-egg-indicator.active {
+    transform: translateX(0);
+}
+
+/* Footer */
+.arcade-footer {
+    margin-top: var(--spacing-md);
+    font-size: 0.5rem;
+    color: var(--neon-cyan);
+    opacity: 0.5;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, var(--dark-bg), var(--darker-bg));
+    margin: 15% auto;
+    padding: 0;
+    border: 3px solid var(--neon-pink);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 30px var(--neon-pink);
+    animation: glitch 0.2s ease;
+}
+
+.modal-header {
+    padding: var(--spacing-sm);
+    background: var(--neon-pink);
+    color: var(--dark-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--neon-cyan);
+}
+
+.modal-header h2 {
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--dark-bg);
+    font-weight: bold;
+}
+
+.modal-body {
+    padding: var(--spacing-md);
+    text-align: center;
+}
+
+.modal-message {
+    color: var(--neon-green);
+    margin-bottom: var(--spacing-md);
+    font-size: 0.8rem;
+}
+
+.modal-options {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}
+
+.modal-btn {
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: transparent;
+    border: 2px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.modal-btn:hover {
+    background: var(--neon-cyan);
+    color: var(--dark-bg);
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .arcade-container {
+        padding: var(--spacing-md);
+        width: 95%;
+    }
+
+    .start-button {
+        font-size: 0.7rem;
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .game-info {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .modal-content {
+        margin: 50% auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .arcade-title {
+        font-size: clamp(1rem, 6vw, 2rem);
+    }
+
+    .subtitle {
+        font-size: 0.5rem;
+    }
+
+    .credit-display {
+        font-size: 0.6rem;
+    }
+}

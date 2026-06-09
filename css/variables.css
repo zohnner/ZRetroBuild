@@ -1,0 +1,71 @@
+/* CSS Variables & Reset */
+:root {
+    /* Neon Colors */
+    --neon-pink: #ff00ff;
+    --neon-cyan: #00ffff;
+    --neon-green: #00ff00;
+    --neon-yellow: #ffff00;
+    --neon-red: #ff0044;
+
+    /* Background */
+    --dark-bg: #0a0c0f;
+    --darker-bg: #050608;
+
+    /* Glow Effects */
+    --crt-glow: rgba(0, 255, 255, 0.08);
+    --pink-glow: rgba(255, 0, 255, 0.3);
+    --green-glow: rgba(0, 255, 0, 0.3);
+
+    /* Typography */
+    --font-pixel: 'Press Start 2P', 'Courier New', monospace;
+    --font-terminal: 'VT323', 'Courier New', monospace;
+
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 3rem;
+    --spacing-xl: 5rem;
+
+    /* Animations */
+    --transition-fast: 0.1s ease;
+    --transition-normal: 0.3s ease;
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--darker-bg);
+    font-family: var(--font-pixel);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden;
+    cursor: default;
+}
+
+/* Selection color */
+::selection {
+    background: var(--neon-pink);
+    color: var(--dark-bg);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    background: var(--dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--neon-cyan);
+    border-radius: 4px;
+}
