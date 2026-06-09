@@ -1,76 +1,84 @@
-/* ═══════════════════════════════
-   HIGH SCORE MANAGER
-═══════════════════════════════ */
+// === HIGH SCORE MANAGER (per-game) ===
 class HighScoreManager {
     constructor() {
-        this.KEY      = 'arcadeHighScores_v2';
         this.MAX      = 5;
-        this.defaults = [
-            { initials: 'ZRB', score: 9900 },
-            { initials: 'ACE', score: 7400 },
-            { initials: 'MXR', score: 5200 },
-            { initials: 'NES', score: 3100 },
-            { initials: 'C64', score: 1500 },
-        ];
-        this.scores = this._load();
+        this.defaults = {
+            snake: [
+                { initials:'ZRB', score:9900 }, { initials:'ACE', score:7400 },
+                { initials:'MXR', score:5200 }, { initials:'NES', score:3100 },
+                { initials:'C64', score:1500 },
+            ],
+            breakout: [
+                { initials:'ACE', score:4800 }, { initials:'ZRB', score:3600 },
+                { initials:'MXR', score:2400 }, { initials:'NES', score:1600 },
+                { initials:'C64', score: 800 },
+            ],
+        };
+        this._cache = {};
     }
 
-    _load() {
+    _key(gameId) { return 'arcadeScores_' + gameId + '_v1'; }
+
+    _load(gameId) {
+        if (this._cache[gameId]) return this._cache[gameId];
         try {
-            const raw = localStorage.getItem(this.KEY);
-            if (!raw) return this.defaults.map(e => ({ ...e }));
-            const parsed = JSON.parse(raw);
-            // Validate shape
-            if (!Array.isArray(parsed) || !parsed.every(e => e.initials && typeof e.score === 'number')) {
-                return this.defaults.map(e => ({ ...e }));
-            }
+            var raw = localStorage.getItem(this._key(gameId));
+            if (!raw) throw new Error('no data');
+            var parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) throw new Error('bad shape');
+            this._cache[gameId] = parsed;
             return parsed;
-        } catch {
-            return this.defaults.map(e => ({ ...e }));
+        } catch(e) {
+            var def = (this.defaults[gameId] || []).map(function(e) { return { initials: e.initials, score: e.score }; });
+            this._cache[gameId] = def;
+            return def;
         }
     }
 
-    _save() {
-        try { localStorage.setItem(this.KEY, JSON.stringify(this.scores)); } catch {}
+    _save(gameId) {
+        try { localStorage.setItem(this._key(gameId), JSON.stringify(this._cache[gameId])); } catch(e) {}
     }
 
-    /** True if `score` would make the board */
-    isHighScore(score) {
+    isHighScore(score, gameId) {
+        gameId = gameId || 'snake';
         if (score <= 0) return false;
-        if (this.scores.length < this.MAX) return true;
-        return score > this.scores[this.scores.length - 1].score;
+        var s = this._load(gameId);
+        if (s.length < this.MAX) return true;
+        return score > s[s.length - 1].score;
     }
 
-    /** Add entry, sort, trim, persist */
-    add(initials, score) {
-        const cleaned = (initials || 'AAA')
-            .toUpperCase()
-            .replace(/[^A-Z]/g, 'A')
-            .padEnd(3, 'A')
-            .slice(0, 3);
-        this.scores.push({ initials: cleaned, score });
-        this.scores.sort((a, b) => b.score - a.score);
-        this.scores = this.scores.slice(0, this.MAX);
-        this._save();
+    add(initials, score, gameId) {
+        gameId = gameId || 'snake';
+        var cleaned = ((initials || 'AAA').toUpperCase().replace(/[^A-Z]/g, 'A') + 'AAA').slice(0, 3);
+        var s = this._load(gameId);
+        s.push({ initials: cleaned, score: score });
+        s.sort(function(a, b) { return b.score - a.score; });
+        this._cache[gameId] = s.slice(0, this.MAX);
+        this._save(gameId);
     }
 
-    getTop()      { return this.scores; }
-    getTopScore() { return this.scores.length ? this.scores[0].score : 0; }
+    getTop(gameId) { return this._load(gameId || 'snake'); }
 
-    /** Render into an <ol> element */
-    renderList(listEl) {
+    getTopScore(gameId) {
+        var s = this._load(gameId || 'snake');
+        return s.length ? s[0].score : 0;
+    }
+
+    getTopScoreFor(gameId) { return this.getTopScore(gameId); }
+
+    renderList(listEl, gameId) {
         if (!listEl) return;
-        const top      = this.getTop();
-        const maxScore = top[0]?.score || 1;
-
-        listEl.innerHTML = top.map((e, i) => `
-            <li>
-                <span class="score-rank">#${i + 1}</span>
-                <span class="score-initials">${e.initials}</span>
-                <div  class="score-bar" style="width:${Math.round(e.score / maxScore * 100)}%"></div>
-                <span class="score-value">${String(e.score).padStart(5, '0')}</span>
-            </li>
-        `).join('');
+        gameId = gameId || 'snake';
+        var top      = this.getTop(gameId);
+        var maxScore = (top[0] && top[0].score) || 1;
+        listEl.innerHTML = top.map(function(e, i) {
+            return '<li>' +
+                '<span class="score-rank">#' + (i+1) + '</span>' +
+                '<span class="score-initials">' + e.initials + '</span>' +
+                '<div class="score-bar" style="width:' + Math.round(e.score/maxScore*100) + '%"></div>' +
+                '<span class="score-value">' + String(e.score).padStart(5,'0') + '</span>' +
+                '</li>';
+        }).join('');
     }
 }
 

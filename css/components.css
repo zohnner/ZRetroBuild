@@ -717,3 +717,153 @@
     .hud-value { font-size: 1.3rem; }
     .game-footer-bar .game-hints { display: none; }
 }
+
+/* ══════════════════════════════════════
+   GAME SELECT SCREEN
+══════════════════════════════════════ */
+.select-screen {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: var(--panel-max);
+    min-height: 70vh;
+    padding: 1.5rem 0;
+    animation: slideInRight 0.28s ease forwards;
+}
+
+.select-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.select-header {
+    font-family: var(--font-pixel);
+    font-size: clamp(0.65rem, 2.2vw, 1rem);
+    color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+    letter-spacing: 4px;
+    animation: pulseGlow 2.2s ease-in-out infinite;
+}
+
+.select-grid {
+    display: flex;
+    gap: clamp(1rem, 4vw, 2.5rem);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.game-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.2rem 1rem 1rem;
+    background: rgba(0,0,0,0.55);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
+    min-width: clamp(120px, 28vw, 200px);
+    user-select: none;
+}
+
+.game-card:hover,
+.game-card--active {
+    border-color: var(--cyan);
+    box-shadow: 0 0 24px rgba(0,255,255,0.25), inset 0 0 20px rgba(0,255,255,0.04);
+    transform: translateY(-3px);
+}
+
+.game-card__preview {
+    width: clamp(90px, 22vw, 160px);
+    height: clamp(90px, 22vw, 160px);
+    border: 2px solid var(--cyan);
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    position: relative;
+}
+
+/* ASCII art previews */
+.game-card__art {
+    font-family: var(--font-terminal);
+    font-size: clamp(0.55rem, 1.5vw, 0.75rem);
+    line-height: 1.2;
+    white-space: pre;
+    text-align: center;
+    color: #00ff41;
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+.game-card__art[data-art="snake"]::before {
+    content: "            \A ·→→→→→·  \A ·     ↓  \A ·←←←  ↓  \A      ↓  \A      O  \A          ";
+}
+
+.game-card__art[data-art="breakout"]::before {
+    content: "=·=·=·=·=·\A ·=·=·=·=·\A =·=·=·=·=·\A           \A    [===]  \A    · O ·  \A   [=====] ";
+}
+
+.game-card__title {
+    font-family: var(--font-pixel);
+    font-size: clamp(0.55rem, 1.8vw, 0.85rem);
+    color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+    letter-spacing: 2px;
+}
+
+.game-card--active .game-card__title {
+    animation: pulseGlow 1.5s ease-in-out infinite;
+}
+
+.game-card__tag {
+    font-family: var(--font-pixel);
+    font-size: clamp(0.35rem, 1.2vw, 0.5rem);
+    color: var(--pink);
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border: 1px solid var(--pink);
+    border-radius: 2px;
+}
+
+.game-card__hi {
+    font-family: var(--font-terminal);
+    font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+    color: var(--yellow);
+}
+
+.gc-hi-label {
+    color: rgba(255,255,255,0.4);
+    font-size: 0.85em;
+    margin-right: 0.3em;
+}
+
+.select-footer {
+    font-family: var(--font-pixel);
+    font-size: clamp(0.32rem, 1.1vw, 0.48rem);
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+    animation: blink 1.8s step-end infinite;
+}
+
+/* ══════════════════════════════════════
+   LIVES DISPLAY
+══════════════════════════════════════ */
+.lives-display {
+    font-family: var(--font-pixel);
+    font-size: clamp(0.45rem, 1.5vw, 0.65rem);
+    color: var(--green);
+    text-shadow: var(--glow-green);
+    text-align: center;
+    letter-spacing: 3px;
+    padding: 0.2rem 0;
+}

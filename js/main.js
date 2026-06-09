@@ -46,12 +46,16 @@ class GameController {
     constructor() {
         this.credits         = 0;
         this.players         = 1;
-        this.snake           = null;
+        this.activeGame      = null;  // 'snake' | 'breakout'
+        this.gameInstance    = null;
         this._pendingScore   = 0;
         this._pendingIsHigh  = false;
         this._scoreSubmitted = false;
+        this._gameSelect     = null;
+
         this._loadState();
         this._initStarfield();
+        this._initGameSelect();
         this._initUI();
         this._bindEvents();
     }
@@ -74,11 +78,22 @@ class GameController {
         if (cvs) new Starfield(cvs);
     }
 
+    _initGameSelect() {
+        var self = this;
+        this._gameSelect = new GameSelect(
+            [
+                { id: 'snake',   title: 'SNAKE',    tag: 'CLASSIC', color: '#00ffff' },
+                { id: 'breakout',title: 'BREAKOUT', tag: 'NEW',     color: '#ff00ff' },
+            ],
+            function(gameId) { self._launchGameById(gameId); }
+        );
+    }
+
     _initUI() {
         this._updateCreditDisplay(false);
         this._updateMuteIcon();
-        this._updateTopScore();
-        this._renderScoreBoard();
+        this._updateTopScore('snake');
+        this._renderScoreBoard('snake');
         document.getElementById('playerDisplay').textContent = this.players;
     }
 
@@ -97,16 +112,18 @@ class GameController {
         document.getElementById('muteBtn').addEventListener('click', function() { self._toggleMute(); });
 
         document.addEventListener('keydown', function(e) {
-            var gameVis = !document.getElementById('gameScreen').classList.contains('hidden');
-            if (!gameVis) {
+            var gVis = !document.getElementById('gameScreen').classList.contains('hidden');
+            var sVis = !document.getElementById('selectScreen').classList.contains('hidden');
+            if (!gVis && !sVis) {
                 if (e.code === 'KeyC') { e.preventDefault(); self.insertCoin(); }
                 if (e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); self.pressStart(); }
             }
-            if (gameVis && e.key === 'Escape') self.exitGame();
+            if (gVis && e.key === 'Escape') self.exitGame();
+            if (sVis && e.key === 'Escape') self._cancelSelect();
         });
 
         document.getElementById('pauseBtn').addEventListener('click', function() {
-            if (self.snake) self.snake.togglePause();
+            if (self.gameInstance && self.gameInstance.togglePause) self.gameInstance.togglePause();
         });
         document.getElementById('exitTopBtn').addEventListener('click', function() { self.exitGame(); });
         document.getElementById('exitBtn').addEventListener('click', function() { self.exitGame(); });
@@ -119,7 +136,9 @@ class GameController {
         inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') self._saveScore(); });
         document.getElementById('saveScoreBtn').addEventListener('click', function() { self._saveScore(); });
 
-        window.addEventListener('resize', function() { if (self.snake) self.snake.resize(); });
+        window.addEventListener('resize', function() {
+            if (self.gameInstance && self.gameInstance.resize) self.gameInstance.resize();
+        });
     }
 
     insertCoin() {
@@ -143,8 +162,7 @@ class GameController {
         this.credits--;
         this._updateCreditDisplay(false);
         this._saveState();
-        window.audio.start();
-        this._launchGame();
+        this._showGameSelect();
     }
 
     _setPlayers(n) {
@@ -160,53 +178,97 @@ class GameController {
         this._updateMuteIcon(); this._saveState();
     }
 
-    _launchGame() {
-        var self = this;
+    // ─── Select screen ───────────────────────────────────────
+    _showGameSelect() {
         var splash = document.getElementById('splashScreen');
-        var gscr   = document.getElementById('gameScreen');
+        var select = document.getElementById('selectScreen');
         splash.classList.add('exit');
+        var self = this;
         setTimeout(function() {
             splash.style.display = 'none';
             splash.classList.remove('exit');
-            gscr.classList.remove('hidden');
-            self._startSnake();
+            self._gameSelect.show(select);
         }, 270);
     }
 
-    _startSnake() {
-        var self = this;
+    _cancelSelect() {
+        this._gameSelect.hide();
+        // Refund credit
+        this.credits = Math.min(99, this.credits + 1);
+        this._updateCreditDisplay(false);
+        this._saveState();
+        var splash = document.getElementById('splashScreen');
+        splash.style.display = '';
+        this._renderScoreBoard(this.activeGame || 'snake');
+    }
+
+    // ─── Launch game ─────────────────────────────────────────
+    _launchGameById(gameId) {
+        this.activeGame = gameId;
+        var select = document.getElementById('selectScreen');
+        select.classList.add('hidden');
+
+        var gscr = document.getElementById('gameScreen');
+        gscr.classList.remove('hidden');
+
+        // Update game screen title
+        var nameEl = document.getElementById('gameName');
+        if (nameEl) nameEl.textContent = '8-BIT ' + gameId.toUpperCase();
+
+        this._startGame(gameId);
+    }
+
+    _startGame(gameId) {
+        var self   = this;
         var canvas = document.getElementById('gameCanvas');
-        if (this.snake) this.snake.destroy();
-        this.snake = new SnakeGame(canvas);
-        this.snake.onScore = function(s) { self._onScore(s); };
-        this.snake.onDeath = function(s) { self._onDeath(s); };
+        if (this.gameInstance) this.gameInstance.destroy();
+
+        if (gameId === 'breakout') {
+            this.gameInstance = new BreakoutGame(canvas);
+            this.gameInstance.onScore = function(s) { self._onScore(s); };
+            this.gameInstance.onDeath = function(s) { self._onDeath(s); };
+            this.gameInstance.onLife  = function(l) { self._onLife(l); };
+            this._initLivesDisplay(3);
+        } else {
+            this.gameInstance = new SnakeGame(canvas);
+            this.gameInstance.onScore = function(s) { self._onScore(s); };
+            this.gameInstance.onDeath = function(s) { self._onDeath(s); };
+            this._hideLivesDisplay();
+        }
+
         this._setHUD(0);
         document.getElementById('liveBest').textContent =
-            String(window.highScores.getTopScore()).padStart(5, '0');
+            String(window.highScores.getTopScore(gameId)).padStart(5,'0');
         document.getElementById('gameOverlay').classList.add('hidden');
-        this.snake.start();
+        this.gameInstance.start();
     }
 
     exitGame() {
-        if (this.snake) { this.snake.destroy(); this.snake = null; }
+        if (this.gameInstance) { this.gameInstance.destroy(); this.gameInstance = null; }
         document.getElementById('gameScreen').classList.add('hidden');
+        document.getElementById('selectScreen').classList.add('hidden');
         var splash = document.getElementById('splashScreen');
         splash.style.display = '';
         document.getElementById('gameOverlay').classList.add('hidden');
-        this._renderScoreBoard();
-        this._updateTopScore();
+        this._hideLivesDisplay();
+        this._renderScoreBoard(this.activeGame || 'snake');
+        this._updateTopScore(this.activeGame || 'snake');
     }
 
     _restartGame() {
         if (this.credits > 0) { this.credits--; this._updateCreditDisplay(false); this._saveState(); }
-        this._startSnake();
+        this._startGame(this.activeGame || 'snake');
     }
 
     _onScore(score) { this._setHUD(score); }
+    _onLife(lives)  {
+        var el = document.getElementById('livesDisplay');
+        if (el) el.textContent = 'LIVES: ' + String(lives).repeat ? Array(lives+1).join('O') : lives;
+    }
 
     _onDeath(score) {
-        this._pendingScore  = score;
-        this._pendingIsHigh = window.highScores.isHighScore(score);
+        this._pendingScore   = score;
+        this._pendingIsHigh  = window.highScores.isHighScore(score, this.activeGame);
         this._scoreSubmitted = false;
         if (this._pendingIsHigh) {
             window.audio.highScore();
@@ -220,11 +282,10 @@ class GameController {
         document.getElementById('overlayTitle').textContent    = title;
         document.getElementById('overlaySubtitle').textContent = sub;
         var form = document.getElementById('initialsForm');
-        var inp  = document.getElementById('initialsInput');
         if (showInitials) {
             form.classList.remove('hidden');
-            inp.value = '';
-            setTimeout(function() { inp.focus(); }, 120);
+            document.getElementById('initialsInput').value = '';
+            setTimeout(function() { document.getElementById('initialsInput').focus(); }, 120);
         } else {
             form.classList.add('hidden');
         }
@@ -235,12 +296,12 @@ class GameController {
         if (this._scoreSubmitted) return;
         var initials = document.getElementById('initialsInput').value.trim() || 'AAA';
         if (this._pendingIsHigh && this._pendingScore > 0) {
-            window.highScores.add(initials, this._pendingScore);
+            window.highScores.add(initials, this._pendingScore, this.activeGame);
             this._scoreSubmitted = true;
         }
         document.getElementById('initialsForm').classList.add('hidden');
         document.getElementById('liveBest').textContent =
-            String(window.highScores.getTopScore()).padStart(5,'0');
+            String(window.highScores.getTopScore(this.activeGame)).padStart(5,'0');
     }
 
     _setHUD(score) {
@@ -250,6 +311,15 @@ class GameController {
         el.classList.remove('pop');
         void el.offsetWidth;
         el.classList.add('pop');
+    }
+
+    _initLivesDisplay(lives) {
+        var el = document.getElementById('livesDisplay');
+        if (el) { el.textContent = Array(lives+1).join('O'); el.classList.remove('hidden'); }
+    }
+    _hideLivesDisplay() {
+        var el = document.getElementById('livesDisplay');
+        if (el) el.classList.add('hidden');
     }
 
     _updateCreditDisplay(pop) {
@@ -266,14 +336,14 @@ class GameController {
         if (el) el.textContent = window.audio.muted ? '[MUTE]' : '[SFX]';
     }
 
-    _updateTopScore() {
+    _updateTopScore(gameId) {
         var el = document.getElementById('topScore');
-        if (el) el.textContent = String(window.highScores.getTopScore()).padStart(5,'0');
+        if (el) el.textContent = String(window.highScores.getTopScore(gameId)).padStart(5,'0');
     }
 
-    _renderScoreBoard() {
-        window.highScores.renderList(document.getElementById('scoreList'));
-        this._updateTopScore();
+    _renderScoreBoard(gameId) {
+        window.highScores.renderList(document.getElementById('scoreList'), gameId);
+        this._updateTopScore(gameId);
     }
 
     _animateCoinDrop() {
@@ -307,6 +377,6 @@ class GameController {
 // === BOOT ===
 document.addEventListener('DOMContentLoaded', function() {
     window.game = new GameController();
-    console.log('8-BIT ARCADE - READY');
+    console.log('8-BIT ARCADE v2 — READY');
     console.log('  C = insert coin | ENTER/SPC = start | Konami = +30 credits');
 });
