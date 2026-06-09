@@ -1,71 +1,69 @@
-/* CSS Variables & Reset */
+/* ═══════════════════════════════
+   DESIGN TOKENS & RESET
+═══════════════════════════════ */
 :root {
-    /* Neon Colors */
-    --neon-pink: #ff00ff;
-    --neon-cyan: #00ffff;
-    --neon-green: #00ff00;
-    --neon-yellow: #ffff00;
-    --neon-red: #ff0044;
+    /* Neon palette */
+    --cyan:   #00ffff;
+    --pink:   #ff00ff;
+    --green:  #00ff41;
+    --yellow: #ffff00;
+    --orange: #ff7700;
+    --white:  #e8f4f8;
 
-    /* Background */
-    --dark-bg: #0a0c0f;
-    --darker-bg: #050608;
+    /* Backgrounds */
+    --bg:        #050608;
+    --bg-panel:  rgba(4, 6, 10, 0.93);
+    --bg-hud:    rgba(0, 0, 0, 0.75);
+    --bg-glass:  rgba(0, 255, 255, 0.04);
 
-    /* Glow Effects */
-    --crt-glow: rgba(0, 255, 255, 0.08);
-    --pink-glow: rgba(255, 0, 255, 0.3);
-    --green-glow: rgba(0, 255, 0, 0.3);
+    /* Glow shortcuts (text-shadow format) */
+    --glow-cyan:  0 0 6px #00ffff, 0 0 18px rgba(0,255,255,0.45);
+    --glow-pink:  0 0 6px #ff00ff, 0 0 18px rgba(255,0,255,0.45);
+    --glow-green: 0 0 6px #00ff41, 0 0 18px rgba(0,255,65,0.45);
+    --glow-yel:   0 0 6px #ffff00, 0 0 18px rgba(255,255,0,0.45);
 
     /* Typography */
-    --font-pixel: 'Press Start 2P', 'Courier New', monospace;
+    --font-pixel:    'Press Start 2P', 'Courier New', monospace;
     --font-terminal: 'VT323', 'Courier New', monospace;
 
-    /* Spacing */
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 2rem;
-    --spacing-lg: 3rem;
-    --spacing-xl: 5rem;
+    /* Layout */
+    --panel-max: 820px;
 
-    /* Animations */
-    --transition-fast: 0.1s ease;
-    --transition-normal: 0.3s ease;
+    /* Transitions */
+    --t-snap:   60ms ease;
+    --t-fast:   120ms ease;
+    --t-normal: 220ms ease;
+    --t-slow:   380ms ease;
 }
 
-/* Reset */
-*,
-*::before,
-*::after {
+/* ─── Reset ─── */
+*, *::before, *::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
+html { height: 100%; }
+
 body {
-    background: var(--darker-bg);
+    background: var(--bg);
     font-family: var(--font-pixel);
-    min-height: 100vh;
+    min-height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    overflow-x: hidden;
+    overflow: hidden;
     cursor: default;
+    color: var(--cyan);
 }
 
-/* Selection color */
 ::selection {
-    background: var(--neon-pink);
-    color: var(--dark-bg);
+    background: var(--pink);
+    color: var(--bg);
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-    width: 8px;
-    background: var(--dark-bg);
-}
+::-webkit-scrollbar { width: 6px; background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 3px; }
 
-::-webkit-scrollbar-thumb {
-    background: var(--neon-cyan);
-    border-radius: 4px;
-}
+/* ─── Utility ─── */
+.hidden { display: none !important; }

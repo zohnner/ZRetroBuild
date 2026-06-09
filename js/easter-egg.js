@@ -1,93 +1,62 @@
-// Konami Code Easter Egg
+// === KONAMI CODE EASTER EGG ===
+// Sequence: Up Up Down Down Left Right Left Right B A
 class KonamiCode {
     constructor() {
-        // Konami Code sequence: ↑ ↑ ↓ ↓ ← → ← → B A
-        this.code = [
-            'ArrowUp', 'ArrowUp',
-            'ArrowDown', 'ArrowDown',
-            'ArrowLeft', 'ArrowRight',
-            'ArrowLeft', 'ArrowRight',
-            'KeyB', 'KeyA'
+        this.sequence = [
+            'ArrowUp','ArrowUp','ArrowDown','ArrowDown',
+            'ArrowLeft','ArrowRight','ArrowLeft','ArrowRight',
+            'KeyB','KeyA'
         ];
-        this.position = 0;
+        this.pos       = 0;
         this.activated = false;
-        this.indicator = document.getElementById('easterEggIndicator');
-        this.setupListener();
+        var self = this;
+        document.addEventListener('keydown', function(e) { self._check(e.code); });
     }
 
-    setupListener() {
-        document.addEventListener('keydown', (e) => {
-            if (this.activated) return;
-
-            const key = e.code;
-            const requiredKey = this.code[this.position];
-
-            if (key === requiredKey) {
-                this.position++;
-
-                if (this.position === this.code.length) {
-                    this.activate();
-                }
-            } else {
-                this.position = 0;
-            }
-        });
+    _check(code) {
+        if (this.activated) return;
+        if (code === this.sequence[this.pos]) {
+            this.pos++;
+            if (this.pos === this.sequence.length) this._activate();
+        } else {
+            this.pos = (code === this.sequence[0]) ? 1 : 0;
+        }
     }
 
-    activate() {
+    _activate() {
         this.activated = true;
-        console.log('🎮 KONAMI CODE ACTIVATED! 🎮');
+        if (window.game) window.game.addCredits(30);
 
-        // Show indicator
-        if (this.indicator) {
-            this.indicator.classList.add('active');
-            setTimeout(() => {
-                this.indicator.classList.remove('active');
-            }, 3000);
+        var toast = document.getElementById('konamiToast');
+        if (toast) {
+            toast.classList.remove('hidden');
+            setTimeout(function() { toast.classList.add('hidden'); }, 3200);
         }
 
-        // Trigger visual effects
-        this.triggerEffects();
+        this._rainbow();
+        if (window.audio) { window.audio.init(); window.audio.konami(); }
 
-        // Add credits
-        if (window.gameState && window.gameState.addCredits) {
-            window.gameState.addCredits(10);
-        }
-
-        // Play sound
-        if (window.audioManager) {
-            window.audioManager.playBeep(660, 0.1, 'sine');
-            setTimeout(() => window.audioManager.playBeep(880, 0.2, 'sine'), 100);
-            setTimeout(() => window.audioManager.playBeep(1320, 0.3, 'sine'), 200);
-        }
-
-        // Reset after 5 seconds (can only activate once per session)
-        setTimeout(() => {
-            this.activated = false;
-            this.position = 0;
-        }, 5000);
+        var self = this;
+        setTimeout(function() { self.activated = false; self.pos = 0; }, 5000);
     }
 
-    triggerEffects() {
-        // Rainbow border effect
-        const container = document.querySelector('.arcade-container');
-        if (container) {
-            const colors = ['#ff00ff', '#00ffff', '#ffff00', '#00ff00'];
-            let i = 0;
-            const interval = setInterval(() => {
-                container.style.borderColor = colors[i % colors.length];
-                container.style.boxShadow = `0 0 30px ${colors[i % colors.length]}`;
-                i++;
-                if (i > 20) {
-                    clearInterval(interval);
-                    container.style.borderColor = 'var(--neon-cyan)';
-                    container.style.boxShadow =
-                        '0 0 20px var(--neon-cyan), inset 0 0 10px var(--crt-glow)';
-                }
-            }, 100);
-        }
+    _rainbow() {
+        var panel = document.getElementById('screenPanel');
+        if (!panel) return;
+        var colors = ['#ff00ff','#00ffff','#ffff00','#00ff41','#ff7700'];
+        var i = 0;
+        var iv = setInterval(function() {
+            var c = colors[i % colors.length];
+            panel.style.borderColor = c;
+            panel.style.boxShadow = '-10px 0 30px ' + c + '55, 10px 0 30px ' + c + '55';
+            i++;
+            if (i > 32) {
+                clearInterval(iv);
+                panel.style.borderColor = '';
+                panel.style.boxShadow   = '';
+            }
+        }, 90);
     }
 }
 
-// Initialize Konami Code
-const konamiCode = new KonamiCode();
+new KonamiCode();

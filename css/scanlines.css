@@ -1,67 +1,42 @@
-/* CRT Scanline Effect */
+/* ═══════════════════════════════
+   CRT / SCREEN EFFECTS
+═══════════════════════════════ */
+
+/* Scanlines */
 .crt-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     pointer-events: none;
-    z-index: 999;
+    z-index: 900;
     background: repeating-linear-gradient(
         0deg,
-        rgba(0, 255, 0, 0.03) 0px,
-        rgba(0, 255, 0, 0.03) 2px,
-        transparent 2px,
-        transparent 6px
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.13) 3px,
+        rgba(0, 0, 0, 0.13) 4px
     );
-    animation: scanlineMove 8s linear infinite;
 }
 
-@keyframes scanlineMove {
-    from {
-        transform: translateY(0);
-    }
-    to {
-        transform: translateY(100%);
-    }
-}
-
-/* Vignette Effect */
+/* Vignette */
 .vignette {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     pointer-events: none;
-    z-index: 998;
+    z-index: 901;
     background: radial-gradient(
-        circle at center,
-        transparent 50%,
-        rgba(0, 0, 0, 0.4) 100%
+        ellipse at center,
+        transparent 48%,
+        rgba(0, 0, 0, 0.7) 100%
     );
 }
 
-/* CRT Flicker Animation */
-@keyframes flicker {
-    0%   { opacity: 0.95; }
-    5%   { opacity: 0.85; }
-    10%  { opacity: 0.95; }
-    15%  { opacity: 0.90; }
-    20%  { opacity: 0.95; }
-    100% { opacity: 0.95; }
+/* Subtle screen flicker on the panel */
+@keyframes crtFlicker {
+    0%,  89%, 91%, 93%, 100% { opacity: 1; }
+    90% { opacity: 0.90; }
+    92% { opacity: 0.95; }
 }
 
-.arcade-container {
-    animation: flicker 0.15s infinite;
-}
-
-/* Screen Glow */
-@keyframes screenGlow {
-    0%, 100% {
-        box-shadow: 0 0 20px var(--neon-cyan), inset 0 0 10px var(--crt-glow);
-    }
-    50% {
-        box-shadow: 0 0 30px var(--neon-cyan), inset 0 0 20px var(--crt-glow);
-    }
+.screen-panel {
+    animation: crtFlicker 6s ease-in-out infinite;
 }

@@ -2,116 +2,229 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="description" content="Retro arcade splash page - a nostalgic journey back to 1987">
-    <meta name="author" content="Your Name">
-
-    <!-- Open Graph / Social Media -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="8-Bit Arcade — retro arcade experience with Snake, high scores, and neon lights">
+    <meta name="author" content="ZRetroBuild">
     <meta property="og:title" content="8-BIT ARCADE">
-    <meta property="og:description" content="Step into the arcade - Press Start to begin">
+    <meta property="og:description" content="Insert coin. Press start. Beat the high score.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630?text=8-BIT+ARCADE">
+    <title>8-BIT ARCADE</title>
 
-    <title>8-BIT ARCADE | Retro Splash Page</title>
-
-    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/scanlines.css">
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
-    <!-- CRT Overlay Effects -->
-    <div class="crt-overlay"></div>
-    <div class="vignette"></div>
 
-    <!-- Main Arcade Container -->
-    <main class="arcade-container" id="arcadeContainer">
-        <!-- Ambient Glow -->
-        <div class="ambient-glow"></div>
+    <!-- Starfield background -->
+    <canvas id="bgCanvas" class="bg-canvas" aria-hidden="true"></canvas>
 
-        <!-- Title Section -->
-        <div class="title-wrapper">
-            <h1 class="arcade-title">
-                <span class="glitch-text" data-text="8-BIT">8-BIT</span>
-            </h1>
-            <h1 class="arcade-title">
-                <span class="glitch-text" data-text="ARCADE">ARCADE</span>
-            </h1>
-        </div>
+    <!-- CRT effects -->
+    <div class="crt-overlay" aria-hidden="true"></div>
+    <div class="vignette"    aria-hidden="true"></div>
 
-        <!-- Subtitle -->
-        <p class="subtitle">WHERE LEGENDS ARE MADE</p>
+    <!-- ═══════════════════════════════════════════
+         SPLASH SCREEN
+    ════════════════════════════════════════════ -->
+    <div id="splashScreen" class="splash-screen">
 
-        <!-- Coin / Credit Display -->
-        <div class="credit-display">
-            <span class="credit-label">CREDITS:</span>
-            <span class="credit-amount" id="creditAmount">0</span>
-        </div>
-
-        <!-- Main Action Button -->
-        <button id="startButton" class="start-button">
-            <span class="button-text">&#9654; PRESS START</span>
-            <span class="button-glow"></span>
-        </button>
-
-        <!-- Coin Slot Section -->
-        <div class="coin-slot" id="coinSlot">
-            <div class="coin-slot__insert">INSERT COIN</div>
-            <div class="coin-slot__graphic">
-                <span class="slot-top">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;</span>
-                <span class="slot-middle">&#9474;  &#9633;  &#9474;</span>
-                <span class="slot-bottom">&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</span>
-            </div>
-            <div class="coin-instruction">(CLICK TO INSERT COIN)</div>
-        </div>
-
-        <!-- Game Info Panel -->
-        <div class="game-info">
-            <div class="info-line">
-                <span class="info-label">HIGH SCORE:</span>
-                <span class="info-value" id="highScore">0</span>
-            </div>
-            <div class="info-line">
-                <span class="info-label">PLAYERS:</span>
-                <span class="info-value" id="playersCount">1</span>
+        <!-- Top marquee -->
+        <div class="marquee marquee--top" aria-hidden="true">
+            <div class="marquee__track">
+                <span class="marquee__content">
+                    ★ HIGH SCORE &nbsp;·&nbsp; INSERT COIN &nbsp;·&nbsp;
+                    8-BIT ARCADE &nbsp;·&nbsp; 1 OR 2 PLAYERS &nbsp;·&nbsp;
+                    ★ HIGH SCORE &nbsp;·&nbsp; INSERT COIN &nbsp;·&nbsp;
+                    8-BIT ARCADE &nbsp;·&nbsp; 1 OR 2 PLAYERS &nbsp;·&nbsp;
+                </span>
+                <span class="marquee__content" aria-hidden="true">
+                    ★ HIGH SCORE &nbsp;·&nbsp; INSERT COIN &nbsp;·&nbsp;
+                    8-BIT ARCADE &nbsp;·&nbsp; 1 OR 2 PLAYERS &nbsp;·&nbsp;
+                    ★ HIGH SCORE &nbsp;·&nbsp; INSERT COIN &nbsp;·&nbsp;
+                    8-BIT ARCADE &nbsp;·&nbsp; 1 OR 2 PLAYERS &nbsp;·&nbsp;
+                </span>
             </div>
         </div>
 
-        <!-- Easter Egg Indicator -->
-        <div class="easter-egg-indicator" id="easterEggIndicator">
-            &#9889; KONAMI CODE ACTIVATED &#9889;
-        </div>
+        <!-- Screen panel -->
+        <main class="screen-panel" id="screenPanel">
+            <div class="screen-glow"></div>
 
-        <!-- Footer -->
-        <footer class="arcade-footer">
-            <p>&copy; 1987 / 2025 &mdash; INSERT COIN TO CONTINUE</p>
-        </footer>
-    </main>
+            <!-- Corner decorators -->
+            <span class="corner corner--tl" aria-hidden="true">╔</span>
+            <span class="corner corner--tr" aria-hidden="true">╗</span>
+            <span class="corner corner--bl" aria-hidden="true">╚</span>
+            <span class="corner corner--br" aria-hidden="true">╝</span>
 
-    <!-- Modal Overlay (hidden by default) -->
-    <div id="gameModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>&#9889; GAME START &#9889;</h2>
-                <button class="modal-close" id="closeModal">&times;</button>
+            <!-- Title -->
+            <header class="title-block">
+                <div class="title-rule" aria-hidden="true">· · · · · · · · · · · · · · · · · · ·</div>
+                <h1 class="game-title">
+                    <span class="glitch" data-text="8-BIT">8-BIT</span>
+                </h1>
+                <h1 class="game-title game-title--cyan">
+                    <span class="glitch" data-text="ARCADE">ARCADE</span>
+                </h1>
+                <div class="title-rule" aria-hidden="true">· · · · · · · · · · · · · · · · · · ·</div>
+                <p class="game-subtitle">WHERE LEGENDS ARE MADE</p>
+            </header>
+
+            <!-- High Score Board -->
+            <section class="scoreboard" aria-label="High scores">
+                <h2 class="scoreboard__title">— HIGH SCORES —</h2>
+                <ol id="scoreList" class="scoreboard__list"></ol>
+            </section>
+
+            <!-- Credits -->
+            <div class="credit-bar" aria-live="polite">
+                <span class="credit-bar__label">CREDITS</span>
+                <span id="creditDisplay" class="credit-bar__value">00</span>
             </div>
-            <div class="modal-body">
-                <p class="modal-message" id="modalMessage">CREDITS DETECTED!</p>
-                <div class="modal-options">
-                    <button class="modal-btn" id="playAgainBtn">&#9654; PLAY AGAIN</button>
-                    <button class="modal-btn" id="closeModalBtn">&#10006; CLOSE</button>
+
+            <!-- Player select -->
+            <div class="player-select" role="group" aria-label="Player count">
+                <button id="btn1P" class="player-btn player-btn--active" data-players="1">&#9664; 1 PLAYER</button>
+                <button id="btn2P" class="player-btn" data-players="2">2 PLAYERS &#9654;</button>
+            </div>
+
+            <!-- Start -->
+            <button id="startBtn" class="start-btn" aria-label="Press Start">
+                <span>&#9654;&nbsp;&nbsp;PRESS START&nbsp;&nbsp;&#9664;</span>
+            </button>
+
+            <!-- Coin slot -->
+            <div id="coinSlot" class="coin-slot"
+                 role="button" tabindex="0"
+                 aria-label="Insert coin — click or press C">
+                <p class="coin-slot__label">INSERT COIN</p>
+                <div class="coin-slot__opening">
+                    <span>&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;</span>
+                </div>
+                <p class="coin-slot__hint">[ CLICK &nbsp;·&nbsp; C KEY ]</p>
+            </div>
+
+            <!-- Status row -->
+            <div class="status-row">
+                <div class="stat-chip">
+                    <span class="stat-chip__label">HI-SCORE</span>
+                    <span id="topScore" class="stat-chip__value">00000</span>
+                </div>
+                <button id="muteBtn" class="icon-btn" aria-label="Toggle sound">
+                    <span id="muteIcon">&#128266;</span>
+                </button>
+                <div class="stat-chip stat-chip--right">
+                    <span class="stat-chip__label">PLAYERS</span>
+                    <span id="playerDisplay" class="stat-chip__value">1</span>
                 </div>
             </div>
+
+            <!-- Footer -->
+            <footer class="screen-footer">
+                &copy; 1987 &ndash; 2025 &nbsp;&middot;&nbsp; ZRetroBuild
+            </footer>
+        </main>
+
+        <!-- Bottom marquee -->
+        <div class="marquee marquee--bottom" aria-hidden="true">
+            <div class="marquee__track marquee__track--rev">
+                <span class="marquee__content">
+                    &#9654; SNAKE &nbsp;·&nbsp; BEAT THE HIGH SCORE &nbsp;·&nbsp;
+                    KONAMI CODE: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA &nbsp;·&nbsp;
+                    USE ARROW KEYS OR WASD &nbsp;·&nbsp; GOOD LUCK PLAYER ONE &nbsp;·&nbsp;
+                    &#9654; SNAKE &nbsp;·&nbsp; BEAT THE HIGH SCORE &nbsp;·&nbsp;
+                    KONAMI CODE: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA &nbsp;·&nbsp;
+                    USE ARROW KEYS OR WASD &nbsp;·&nbsp; GOOD LUCK PLAYER ONE &nbsp;·&nbsp;
+                </span>
+                <span class="marquee__content" aria-hidden="true">
+                    &#9654; SNAKE &nbsp;·&nbsp; BEAT THE HIGH SCORE &nbsp;·&nbsp;
+                    KONAMI CODE: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA &nbsp;·&nbsp;
+                    USE ARROW KEYS OR WASD &nbsp;·&nbsp; GOOD LUCK PLAYER ONE &nbsp;·&nbsp;
+                    &#9654; SNAKE &nbsp;·&nbsp; BEAT THE HIGH SCORE &nbsp;·&nbsp;
+                    KONAMI CODE: &#8593;&#8593;&#8595;&#8595;&#8592;&#8594;&#8592;&#8594;BA &nbsp;·&nbsp;
+                    USE ARROW KEYS OR WASD &nbsp;·&nbsp; GOOD LUCK PLAYER ONE &nbsp;·&nbsp;
+                </span>
+            </div>
+        </div>
+
+    </div>
+    <!-- END SPLASH -->
+
+
+    <!-- ═══════════════════════════════════════════
+         GAME SCREEN
+    ════════════════════════════════════════════ -->
+    <div id="gameScreen" class="game-screen hidden" aria-label="Snake game">
+        <div class="game-panel">
+
+            <!-- HUD -->
+            <div class="game-hud">
+                <div class="hud-cell">
+                    <span class="hud-label">SCORE</span>
+                    <span id="liveScore" class="hud-value">00000</span>
+                </div>
+                <div class="hud-cell hud-cell--center">
+                    <span class="game-name">8-BIT SNAKE</span>
+                </div>
+                <div class="hud-cell hud-cell--right">
+                    <span class="hud-label">BEST</span>
+                    <span id="liveBest" class="hud-value">00000</span>
+                </div>
+            </div>
+
+            <!-- Canvas -->
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas" class="game-canvas"></canvas>
+
+                <!-- In-game overlay (death / pause / start) -->
+                <div id="gameOverlay" class="game-overlay-msg hidden">
+                    <p id="overlayTitle"    class="overlay-title"></p>
+                    <p id="overlaySubtitle" class="overlay-subtitle"></p>
+
+                    <div id="initialsForm" class="initials-form hidden">
+                        <p class="initials-prompt">ENTER INITIALS</p>
+                        <input id="initialsInput"
+                               class="initials-input"
+                               maxlength="3"
+                               autocomplete="off"
+                               spellcheck="false"
+                               aria-label="Your initials">
+                        <button id="saveScoreBtn" class="overlay-btn overlay-btn--save">
+                            &#9733; SAVE SCORE
+                        </button>
+                    </div>
+
+                    <div class="overlay-actions">
+                        <button id="restartBtn" class="overlay-btn">&#9654; PLAY AGAIN</button>
+                        <button id="exitBtn"    class="overlay-btn overlay-btn--dim">&#10006; EXIT</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game footer bar -->
+            <div class="game-footer-bar">
+                <span class="game-hints">ARROWS / WASD / SWIPE</span>
+                <button id="pauseBtn"   class="icon-btn-sm">&#9646;&#9646; PAUSE</button>
+                <button id="exitTopBtn" class="icon-btn-sm">&#10006; EXIT</button>
+            </div>
+
         </div>
     </div>
+    <!-- END GAME SCREEN -->
 
-    <!-- JavaScript -->
+
+    <!-- Konami toast -->
+    <div id="konamiToast" class="konami-toast hidden" aria-live="polite">
+        &#9889; KONAMI CODE &mdash; +30 CREDITS &#9889;
+    </div>
+
+
     <script src="js/audio.js"></script>
-    <script src="js/modal.js"></script>
+    <script src="js/scores.js"></script>
+    <script src="js/snake.js"></script>
     <script src="js/easter-egg.js"></script>
     <script src="js/main.js"></script>
 </body>
